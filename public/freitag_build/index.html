@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>3D Portfolio Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script type="module" crossorigin src="./assets/index-BKWHDjAC.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BtFNEx8X.css">
+</head>
+
+<body>
+
+  <div id="lottie-loader"
+    style="position: fixed; top: 55%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 1000px; height: 1000px;">
+  </div>
+  <div id="vanta-bg">
+    <canvas class="webgl"></canvas>
+  </div>
+  <div id="touch-hint">Use your fingers to rotate and zoom the model</div>
+
+  <style>
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loader {
+      display: block;
+    }
+
+    #loader.hidden {
+      display: none;
+    }
+
+    #lottie-loader.fade-out {
+      opacity: 0;
+      transition: opacity 0.5s ease-out;
+    }
+
+    /* Hide UI only when embedded (class added by script) */
+    body.is-embedded #touch-hint,
+    body.is-embedded #burger-menu,
+    body.is-embedded #model-buttons,
+    body.is-embedded .back-button {
+      display: none !important;
+    }
+
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      color: white;
+      text-decoration: none;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 500;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px 20px;
+      border-radius: 30px;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #64ffda;
+      color: #64ffda;
+    }
+  </style>
+  <script>
+    // Detect if running inside an iframe
+    if (window.self !== window.top) {
+      document.body.classList.add('is-embedded');
+    }
+  </script>
+
+  <a href="/" class="back-button">← Back to Portfolio</a>
+
+  <button id="burger-menu" aria-label="Toggle Model Menu">☰</button>
+  <div id="model-buttons">
+    <button id="model1-btn" class="model-btn is-disabled" disabled aria-label="Model 1">
+      <?xml version="1.0" encoding="UTF-8"?>
+      <svg class="model-icon icon-1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 347.65 451.01">
+        <defs>
+          <style>
+            .cls-1 {
+              fill: none;
+              stroke: #fff;
+              stroke-miterlimit: 10;
+              stroke-width: 5px;
+            }
+          </style>
+        </defs>
+        <!-- paths unchanged -->
+        <path class="cls-1"
+          d="M173.82,2.5h27.05c2.17,0,4.14,1.27,5.04,3.25l54.39,120.14c.36.8,1.15,1.31,2.03,1.31h80.6c1.23,0,2.22,1,2.22,2.22v24.47c0,1.23-1,2.22-2.22,2.22h-28.01c-1.23,0-2.22,1-2.22,2.22v27.91c0,1.23-1,2.22-2.22,2.22h-13.68c-.91,0-1.74-.56-2.07-1.41l-11.05-28.2c-.33-.85-1.16-1.41-2.07-1.41h-5.91c-1.58,0-2.65,1.6-2.06,3.06l69.14,170.66c1.14,2.82-.93,5.89-3.97,5.89h-97.97c-2.03,0-3.67,1.64-3.67,3.67v11.81c0,2.03,1.64,3.67,3.67,3.67h37.98c2.17,0,3.93,1.76,3.93,3.93v84.45c0,2.17-1.76,3.93-3.93,3.93h-104.97s-104.97,0-104.97,0c-2.17,0-3.93-1.76-3.93-3.93v-84.45c0-2.17,1.76-3.93,3.93-3.93h37.98c2.03,0,3.67-1.64,3.67-3.67v-11.81c0-2.03-1.64-3.67-3.67-3.67H8.86c-3.04,0-5.11-3.08-3.97-5.89l69.14-170.66c.59-1.46-.48-3.06-2.06-3.06h-5.91c-.91,0-1.74.56-2.07,1.41l-11.05,28.2c-.33.85-1.16,1.41-2.07,1.41h-13.68c-1.23,0-2.22-1-2.22-2.22v-27.91c0-1.23-1-2.22-2.22-2.22H4.72c-1.23,0-2.22-1-2.22-2.22v-24.47c0-1.23,1-2.22,2.22-2.22h80.6c.87,0,1.67-.51,2.03-1.31L141.74,5.75c.9-1.98,2.87-3.25,5.04-3.25h27.05Z" />
+        <rect class="cls-1" x="162.21" y="154.99" width="23.23" height="184.34" rx="6.15" ry="6.15" />
+        <rect class="cls-1" x="162.21" y="58.81" width="23.23" height="71.71" rx="6.15" ry="6.15" />
+        <circle class="cls-1" cx="173.82" cy="27.65" r="6.7" />
+      </svg>
+    </button>
+
+    <button id="model2-btn" class="model-btn is-active" aria-label="Model 2">
+      <?xml version="1.0" encoding="UTF-8"?>
+      <svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 479.23 271">
+        <defs>
+          <style>
+            .cls-1 {
+              fill: none;
+              stroke: #fff;
+              stroke-miterlimit: 10;
+              stroke-width: 5px;
+            }
+          </style>
+        </defs>
+        <path class="cls-1"
+          d="M5.38,140.57l45.32,101.24c5.24,11.7,16.76,19.31,29.57,19.54l106.06,1.91c11.38.2,22.07-5.46,28.28-15l57.4-88.04c6.22-9.53,7.09-21.59,2.31-31.92l-43.59-94.29c-4.99-10.79-15.4-18.08-27.25-19.07L98.12,6.14c-11.88-.99-23.38,4.49-30.09,14.35L8.22,108.48c-6.44,9.48-7.52,21.62-2.83,32.09Z" />
+        <ellipse class="cls-1" cx="210.05" cy="135.5" rx="8.56" ry="14.25" />
+        <ellipse class="cls-1" cx="117.44" cy="165.45" rx="8.56" ry="14.25"
+          transform="translate(-76.5 225.04) rotate(-71.71)" />
+        <ellipse class="cls-1" cx="57.5" cy="163.37" rx="8.56" ry="14.25"
+          transform="translate(-115.66 166.71) rotate(-71.71)" />
+        <ellipse class="cls-1" cx="142.08" cy="219.83" rx="8.56" ry="14.25"
+          transform="translate(-111.23 285.75) rotate(-71.71)" />
+        <ellipse class="cls-1" cx="82.14" cy="217.74" rx="8.56" ry="14.25"
+          transform="translate(-150.38 227.41) rotate(-71.71)" />
+        <ellipse class="cls-1" cx="100.9" cy="191.21" rx="8.56" ry="14.25"
+          transform="translate(-112.31 227.01) rotate(-71.71)" />
+        <ellipse class="cls-1" cx="59.67" cy="92.19" rx="14.25" ry="8.56"
+          transform="translate(-35.8 37.92) rotate(-27.47)" />
+        <ellipse class="cls-1" cx="109.52" cy="69.67" rx="14.25" ry="8.56"
+          transform="translate(-19.79 58.38) rotate(-27.47)" />
+        <ellipse class="cls-1" cx="155.27" cy="47.97" rx="14.25" ry="8.56"
+          transform="translate(-4.62 77.03) rotate(-27.47)" />
+        <circle class="cls-1" cx="88.92" cy="31.78" r="5.44" />
+        <path class="cls-1"
+          d="M237.53,213.12l43.68,45.28c7.9,8.19,19.46,11.74,30.6,9.39l102.84-21.66c11.14-2.35,20.28-10.26,24.21-20.94l35.85-97.5c4.1-11.16,1.9-23.67-5.78-32.75L400.64,14.21c-7.7-9.11-19.71-13.36-31.43-11.13l-104.51,19.92c-11.26,2.15-20.61,9.97-24.69,20.68l-2.17,5.69" />
+        <ellipse class="cls-1" cx="388.32" cy="184.83" rx="14.25" ry="8.56"
+          transform="translate(-16.96 328.72) rotate(-45)" />
+        <ellipse class="cls-1" cx="301.65" cy="140.52" rx="8.56" ry="14.25"
+          transform="translate(-30.97 150.6) rotate(-26.71)" />
+        <path class="cls-1" d="M254.34,83.94c4.22-2.13,10.51,1.85,14.05,8.88s2.98,14.45-1.24,16.57" />
+        <ellipse class="cls-1" cx="280.62" cy="196.39" rx="8.56" ry="14.25"
+          transform="translate(-58.33 147.1) rotate(-26.71)" />
+        <path class="cls-1"
+          d="M277.38,139.89c.89,1.32,1.74,2.76,2.51,4.29,4.57,9.07,4.84,18.15.62,20.28-1.87.94-5.43-.61-7.96-2.33" />
+        <ellipse class="cls-1" cx="312.61" cy="47.87" rx="8.56" ry="14.25"
+          transform="translate(172.81 331.54) rotate(-72.47)" />
+        <ellipse class="cls-1" cx="363.78" cy="67.19" rx="8.56" ry="14.25"
+          transform="translate(190.14 393.84) rotate(-72.47)" />
+        <ellipse class="cls-1" cx="411.47" cy="84.2" rx="8.56" ry="14.25"
+          transform="translate(207.25 451.2) rotate(-72.47)" />
+      </svg>
+
+    </button>
+
+    <button id="model3-btn" class="model-btn is-active" aria-label="Model 3">
+      <?xml version="1.0" encoding="UTF-8"?>
+      <svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 651.95 651.95">
+        <defs>
+          <style>
+            .cls-1 {
+              fill: none;
+              stroke: #fff;
+              stroke-miterlimit: 10;
+              stroke-width: 5px;
+            }
+          </style>
+        </defs>
+        <rect class="cls-1" x="259.05" y="256.95" width="190.72" height="194.94" rx="13.09" ry="13.09"
+          transform="translate(-146.8 354.42) rotate(-45)" />
+        <g>
+          <circle class="cls-1" cx="361.12" cy="305" r="19.63" />
+          <circle class="cls-1" cx="305" cy="361.12" r="19.63" />
+          <circle class="cls-1" cx="305" cy="361.12" r="9.05" />
+          <circle class="cls-1" cx="361.12" cy="305" r="9.05" />
+        </g>
+        <rect class="cls-1" x="329.01" y="364.25" width="107.81" height="37.34"
+          transform="translate(-158.61 382.92) rotate(-45)" />
+        <path class="cls-1" d="M442.52,401.63c11.29,11.29,11.29,29.6,0,40.89s-29.6,11.29-40.89,0" />
+        <rect class="cls-1" x="134.37" y="-41.47" width="31.39" height="383.06"
+          transform="translate(-62.16 150.06) rotate(-45)" />
+        <rect class="cls-1" x="530.62" y="434.83" width="9.3" height="246.38"
+          transform="translate(-237.8 541.93) rotate(-45)" />
+        <rect class="cls-1" x="541.99" y="423.45" width="9.3" height="246.38"
+          transform="translate(-226.43 546.64) rotate(-45)" />
+        <rect class="cls-1" x="553.37" y="412.08" width="9.3" height="246.38"
+          transform="translate(-215.05 551.35) rotate(-45)" />
+        <polyline class="cls-1" points="449.08 414.11 477.02 442.05 442.05 477.02 414.11 449.08" />
+      </svg>
+    </button>
+  </div>
+  </div>
+  <!-- ...existing code... -->
+
+</body>
+
+</html>
