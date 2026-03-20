@@ -1,4 +1,4 @@
-import './style.css'
+import './styles/style.css'
 import Experience from './Experience/Experience.js'
 import SimulationWorld from './Experience/World/SimulationWorld.js'
 import Controls from './Experience/Utils/Controls.js'

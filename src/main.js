@@ -1,4 +1,4 @@
-import './style.css'
+import './styles/style.css'
 import Experience from './Experience/Experience.js'
 import Contact from './Experience/Utils/Contact.js'
 import ContactVisual from './Experience/Utils/ContactVisual.js'
@@ -7,30 +7,70 @@ import { gsap } from 'gsap'
 import Translator from './Experience/Utils/Translator.js'
 import { mainSources } from './Experience/sources.js'
 
+import ProjectLoader from './Experience/Utils/ProjectLoader.js'
+import UpdateLog from './Experience/Utils/UpdateLog.js'
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the 3D Experience on the canvas
-    const canvas = document.querySelector('canvas.webgl')
-    new Experience(canvas, undefined, mainSources)
-
-    // Initialize Contact Form
-    new Contact()
-
-    // Initialize Contact Visual
-    new ContactVisual()
-
-    new GenevaViewer()
-
-    // Initialize Translator
+    // 1. Critical stuff: UI Animations, Translator, Project Loader
     new Translator()
+    new ProjectLoader()
+    new Contact()
+    new UpdateLog()
 
-    // Simple UI Entry Animation
-    const tl = gsap.timeline({ delay: 0.5 })
-
-    // Animate UI elements in
+    const tl = gsap.timeline({ delay: 0.2 })
     gsap.set('nav', { opacity: 0, y: -20 })
     tl.to('nav', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' })
     tl.from('.hero-content', { opacity: 0, y: 20, duration: 1, ease: 'power3.out' }, '-=0.8')
+
+    // 2. Main Experience (Delayed or Idle)
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => initExperience())
+    } else {
+        setTimeout(initExperience, 500)
+    }
+
+    // 3. Section-based components (Intersection Observer)
+    setupLazyComponents()
 })
+
+function initExperience() {
+    const canvas = document.querySelector('canvas.webgl')
+    if (canvas) {
+        new Experience(canvas, undefined, mainSources)
+    }
+}
+
+function setupLazyComponents() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                if (entry.target.id === 'geneva-container') {
+                    new GenevaViewer()
+                } else if (entry.target.id === 'contact-visual') {
+                    new ContactVisual()
+                } else if (entry.target.classList.contains('skill-item')) {
+                    const progress = entry.target.querySelector('.skill-progress')
+                    const level = progress.getAttribute('data-level')
+                    progress.style.width = level
+                }
+
+                if (entry.target.classList.contains('skill-item')) {
+                    observer.unobserve(entry.target)
+                } else if (entry.target.id === 'geneva-container' || entry.target.id === 'contact-visual') {
+                    observer.unobserve(entry.target)
+                }
+            }
+        })
+    }, { rootMargin: '0px 0px -50px 0px' })
+
+    const geneva = document.getElementById('geneva-container')
+    const contact = document.getElementById('contact-visual')
+    const skillItems = document.querySelectorAll('.skill-item')
+
+    if (geneva) observer.observe(geneva)
+    if (contact) observer.observe(contact)
+    skillItems.forEach(item => observer.observe(item))
+}
 
 /**
  * Title Typing Animation

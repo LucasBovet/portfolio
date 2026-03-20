@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
 import Experience from '../Experience.js'
 
+const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true'
+
 // KineticType extends nothing but acts as World
 export default class KineticType {
     constructor() {
@@ -113,13 +115,15 @@ export default class KineticType {
         this.scene.add(ambientLight)
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2)
-        directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.set(1024, 1024)
-        directionalLight.shadow.camera.far = 15
-        directionalLight.shadow.camera.left = -7
-        directionalLight.shadow.camera.top = 7
-        directionalLight.shadow.camera.right = 7
-        directionalLight.shadow.camera.bottom = -7
+        directionalLight.castShadow = !isPreview
+        if (directionalLight.castShadow) {
+            directionalLight.shadow.mapSize.set(1024, 1024)
+            directionalLight.shadow.camera.far = 15
+            directionalLight.shadow.camera.left = -7
+            directionalLight.shadow.camera.top = 7
+            directionalLight.shadow.camera.right = 7
+            directionalLight.shadow.camera.bottom = -7
+        }
         directionalLight.position.set(5, 5, 5)
         this.scene.add(directionalLight)
     }
@@ -238,7 +242,7 @@ export default class KineticType {
     }
 
     update() {
-        this.world.step(1 / 60, this.time.delta, 3)
+        this.world.step(1 / 60, this.time.delta, isPreview ? 2 : 3)
 
         for (const object of this.objectsToUpdate) {
             object.mesh.position.copy(object.body.position)

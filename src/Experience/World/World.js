@@ -44,6 +44,64 @@ export default class World {
             // Reference for rotation in update()
             this.mesh = this.heroGroup
 
+            // Mouse Interaction for Hero Model
+            this.raycaster = new THREE.Raycaster()
+            this.mouse = new THREE.Vector2()
+            this.isDragging = false
+            this.previousMousePosition = { x: 0, y: 0 }
+
+            window.addEventListener('pointerdown', (e) => {
+                if (!this.experience.camera.instance) return
+                
+                this.mouse.x = (e.clientX / this.experience.sizes.width) * 2 - 1
+                this.mouse.y = -(e.clientY / this.experience.sizes.height) * 2 + 1
+                
+                this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance)
+                const intersects = this.raycaster.intersectObject(this.heroGroup, true)
+                
+                if (intersects.length > 0) {
+                    this.isDragging = true
+                    this.previousMousePosition = { x: e.clientX, y: e.clientY }
+                    document.body.style.cursor = 'grabbing'
+                }
+            })
+
+            window.addEventListener('pointermove', (e) => {
+                if (this.isDragging && this.heroGroup) {
+                    const deltaMove = {
+                        x: e.clientX - this.previousMousePosition.x,
+                        y: e.clientY - this.previousMousePosition.y
+                    }
+
+                    this.heroGroup.rotation.y += deltaMove.x * 0.01
+                    this.heroGroup.rotation.x += deltaMove.y * 0.01
+
+                    this.previousMousePosition = { x: e.clientX, y: e.clientY }
+                } else if (this.experience.camera.instance) {
+                    // Update cursor to pointer if hovering over model
+                    this.mouse.x = (e.clientX / this.experience.sizes.width) * 2 - 1
+                    this.mouse.y = -(e.clientY / this.experience.sizes.height) * 2 + 1
+                    this.raycaster.setFromCamera(this.mouse, this.experience.camera.instance)
+                    
+                    // Only raycast if heroGroup is active and visible
+                    if(this.heroGroup.visible) {
+                        const intersects = this.raycaster.intersectObject(this.heroGroup, true)
+                        if (intersects.length > 0) {
+                            document.body.style.cursor = 'grab'
+                        } else if (document.body.style.cursor === 'grab' || document.body.style.cursor === 'grabbing') {
+                            document.body.style.cursor = 'default'
+                        }
+                    }
+                }
+            })
+
+            window.addEventListener('pointerup', () => {
+                this.isDragging = false
+                if(document.body.style.cursor === 'grabbing') {
+                    document.body.style.cursor = 'default'
+                }
+            })
+
             // Listen for resize
             this.experience.sizes.on('resize', () => {
                 this.updateHeroResponsive()
@@ -79,8 +137,8 @@ export default class World {
         // Setup environment
         this.environment = new Environment()
 
-        // Project Gallery (Liquid Distortion)
-        this.projectGallery = new ProjectGallery()
+        // Project Gallery (Liquid Distortion) - Currently unused/replaced by iframes
+        // this.projectGallery = new ProjectGallery()
     }
 
 
@@ -122,17 +180,40 @@ export default class World {
     }
 
     update() {
+        // Handle dynamic height changes (like updates loading)
+        this.updateCarouselPosition()
+
         if (this.mesh) {
-            this.mesh.rotation.y += 0.005
-            this.mesh.rotation.x += 0.002
+            if (!this.isDragging) {
+                this.mesh.rotation.y += 0.005
+                this.mesh.rotation.x += 0.002
+            }
+
+            // Fade out based on scroll
+            const scrollY = this.experience.sizes.scroll
+            const fadeStart = 0
+            const fadeEnd = 800
+
+            let opacity = 1 - (scrollY - fadeStart) / (fadeEnd - fadeStart)
+            opacity = Math.max(0, Math.min(1, opacity))
+
+            this.mesh.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    if (!child.material._initialOpacity) child.material._initialOpacity = child.material.opacity
+                    child.material.transparent = true
+                    child.material.opacity = opacity * (child.material._initialOpacity || 1)
+                }
+            })
+
+            this.mesh.visible = opacity > 0
         }
 
         if (this.carousel) {
             this.carousel.update()
         }
 
-        if (this.projectGallery) {
-            this.projectGallery.update()
-        }
+        // if (this.projectGallery) {
+        //     this.projectGallery.update()
+        // }
     }
 }

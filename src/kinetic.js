@@ -1,5 +1,5 @@
 
-import './style.css'
+import './styles/style.css'
 import Experience from './Experience/Experience.js'
 import KineticType from './Experience/Kinematics/KineticType.js'
 

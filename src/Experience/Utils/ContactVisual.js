@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import Performance from './Performance.js'
 
 export default class ContactVisual {
     constructor() {
@@ -22,7 +23,7 @@ export default class ContactVisual {
             antialias: true
         })
         this.renderer.setSize(this.width, this.height)
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        this.renderer.setPixelRatio(Performance.getSuggestedPixelRatio())
         this.container.appendChild(this.renderer.domElement)
 
         // State
@@ -30,6 +31,7 @@ export default class ContactVisual {
         this.targetRotation = new THREE.Vector2()
         this.isActive = false
         this.rotationSpeed = 0.002
+        this.isInView = false
 
         // Objects
         this.createObjects()
@@ -44,14 +46,25 @@ export default class ContactVisual {
         window.addEventListener('resize', this.resize)
         this.container.addEventListener('mousemove', this.onMouseMove)
         this.setupInputListeners()
+        this.setupVisibilityObserver()
+    }
 
-        // No op
-        requestAnimationFrame(this.tick)
+    setupVisibilityObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                this.isInView = entry.isIntersecting
+                if (this.isInView) {
+                    this.tick()
+                }
+            })
+        }, { threshold: 0.1 })
+
+        observer.observe(this.container)
     }
 
     createObjects() {
-        // Main Shape (Wireframe Icosahedron)
-        const geometry = new THREE.IcosahedronGeometry(2.5, 0)
+        // Main Sphere (Wireframe)
+        const geometry = new THREE.SphereGeometry(2.5, 16, 16)
         const material = new THREE.MeshBasicMaterial({
             color: 0x64ffda,
             wireframe: true,
@@ -61,8 +74,8 @@ export default class ContactVisual {
         this.mesh = new THREE.Mesh(geometry, material)
         this.scene.add(this.mesh)
 
-        // Inner Core (Wireframe)
-        const coreGeo = new THREE.IcosahedronGeometry(1.5, 0)
+        // Inner Sphere (Wireframe)
+        const coreGeo = new THREE.SphereGeometry(1.5, 12, 12)
         const coreMat = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             wireframe: true,
@@ -136,6 +149,8 @@ export default class ContactVisual {
     }
 
     tick() {
+        if (!this.isInView) return
+
         // Damping rotation speed back to normal
         let targetSpeed = this.isActive ? 0.02 : 0.002
 

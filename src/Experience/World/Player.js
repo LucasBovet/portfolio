@@ -15,6 +15,7 @@ export default class Player {
             walk: 0.06,
             run: 0.14
         }
+        this.cameraRotation = Math.PI // Initialize with default camera angle
 
         // Setup
         this.resource = this.resources.items.animationIdle
@@ -49,7 +50,7 @@ export default class Player {
             const clip = res.animations[0]
             const action = this.animations.mixer.clipAction(clip)
 
-            console.log(`[Simulation] Found animation for ${name}: "${clip.name}"`)
+            // console.log(`[Simulation] Found animation for ${name}: "${clip.name}"`)
             return action
         }
 
@@ -93,27 +94,31 @@ export default class Player {
             }
 
             this.animations.current = newAction
-            console.log(`[Simulation] Moving to: ${isMoving ? (run ? 'RUN' : 'WALK') : 'IDLE'}`)
+            // console.log(`[Simulation] Moving to: ${isMoving ? (run ? 'RUN' : 'WALK') : 'IDLE'}`)
         }
 
         // --- Logic for Movement ---
         if (isMoving) {
-            let targetAngle = 0
+            let localTargetAngle = 0
 
-            // Re-mapped to fix inversion: W (Forward), S (Backward)
+            // Base angles relative to a fixed forward
             if (forward) {
-                if (left) targetAngle = Math.PI * 0.25
-                else if (right) targetAngle = -Math.PI * 0.25
-                else targetAngle = 0
+                if (left) localTargetAngle = Math.PI * 0.25
+                else if (right) localTargetAngle = -Math.PI * 0.25
+                else localTargetAngle = 0
             } else if (backward) {
-                if (left) targetAngle = Math.PI * 0.75
-                else if (right) targetAngle = -Math.PI * 0.75
-                else targetAngle = Math.PI
+                if (left) localTargetAngle = Math.PI * 0.75
+                else if (right) localTargetAngle = -Math.PI * 0.75
+                else localTargetAngle = Math.PI
             } else if (left) {
-                targetAngle = Math.PI * 0.5
+                localTargetAngle = Math.PI * 0.5
             } else if (right) {
-                targetAngle = -Math.PI * 0.5
+                localTargetAngle = -Math.PI * 0.5
             }
+
+            // Apply camera rotation to make movement relative to the view
+            // cameraRotation + Math.PI aligns the camera's angle with the world space forward
+            const targetAngle = localTargetAngle + (this.cameraRotation || Math.PI) + Math.PI
 
             // Smooth Turn
             const currentRotation = this.model.rotation.y

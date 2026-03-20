@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import Experience from './Experience.js'
 
+const isPreview = new URLSearchParams(window.location.search).get('preview') === 'true'
+
 export default class Renderer {
     constructor() {
         this.experience = new Experience()
@@ -15,8 +17,9 @@ export default class Renderer {
     setInstance() {
         this.instance = new THREE.WebGLRenderer({
             canvas: this.canvas,
-            antialias: true,
-            alpha: true // Allow CSS background to show through if needed
+            antialias: !isPreview,
+            alpha: true,
+            powerPreference: 'high-performance'
         })
 
         // Physically correct lights settings (older syntax but good for base)
@@ -24,10 +27,10 @@ export default class Renderer {
 
         this.instance.toneMapping = THREE.ACESFilmicToneMapping
         this.instance.toneMappingExposure = 1.0
-        this.instance.shadowMap.enabled = true
+        this.instance.shadowMap.enabled = !isPreview
         this.instance.shadowMap.type = THREE.PCFSoftShadowMap
         this.instance.setSize(this.sizes.width, this.sizes.height)
-        this.instance.setPixelRatio(this.sizes.pixelRatio)
+        this.instance.setPixelRatio(isPreview ? 1 : this.sizes.pixelRatio)
     }
 
     resize() {

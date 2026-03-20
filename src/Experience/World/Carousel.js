@@ -41,11 +41,11 @@ export default class Carousel {
         const textureLoader = new THREE.TextureLoader()
 
         const illustrationFiles = [
-            'illustration_1.jpg',
-            'illustration_2.jpg',
-            'illustration_3.jpg',
-            'illustration_4.jpg',
-            'illustration_5.jpg'
+            'illustration_1.webp',
+            'illustration_2.webp',
+            'illustration_3.webp',
+            'illustration_4.webp',
+            'illustration_5.webp'
         ]
 
         this.count = illustrationFiles.length

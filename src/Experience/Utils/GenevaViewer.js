@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+import Performance from './Performance.js'
 
 export default class GenevaViewer {
     constructor() {
@@ -30,7 +31,7 @@ export default class GenevaViewer {
             antialias: true
         })
         this.renderer.setSize(this.width, this.height)
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        this.renderer.setPixelRatio(Performance.getSuggestedPixelRatio())
         this.container.appendChild(this.renderer.domElement)
 
         // Controls
@@ -62,7 +63,21 @@ export default class GenevaViewer {
 
         // Loop
         this.tick = this.tick.bind(this)
-        requestAnimationFrame(this.tick)
+        this.setupVisibilityObserver()
+    }
+
+    setupVisibilityObserver() {
+        this.isInView = false
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                this.isInView = entry.isIntersecting
+                if (this.isInView) {
+                    this.tick()
+                }
+            })
+        }, { threshold: 0.1 })
+
+        observer.observe(this.container)
     }
 
     loadModel() {
@@ -173,6 +188,8 @@ export default class GenevaViewer {
     }
 
     tick() {
+        if (!this.isInView) return
+
         this.controls.update()
 
         // Raycasting for Label
@@ -184,10 +201,10 @@ export default class GenevaViewer {
 
             if (intersects.length > 0) {
                 this.label.style.opacity = '1'
-                document.body.style.cursor = 'pointer'
+                if (document.body.style.cursor !== 'pointer') document.body.style.cursor = 'pointer'
             } else {
                 this.label.style.opacity = '0'
-                document.body.style.cursor = 'default'
+                if (document.body.style.cursor !== 'default') document.body.style.cursor = 'default'
             }
         }
 

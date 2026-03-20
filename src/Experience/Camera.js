@@ -21,13 +21,15 @@ export default class Camera {
             0.1,
             100
         )
-        this.instance.position.set(6, 4, 8)
+        const scrollY = -this.sizes.scroll * 0.01
+        this.instance.position.set(6, 4 + scrollY, 8)
         this.scene.add(this.instance)
     }
 
     setControls() {
         this.controls = new OrbitControls(this.instance, this.canvas)
         this.controls.enableDamping = true
+        this.controls.target.y = -this.sizes.scroll * 0.01
     }
 
     resize() {

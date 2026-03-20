@@ -1,0 +1,23 @@
+[
+    {
+        "date": "2026-03-11",
+        "title": "Adding a Dev Log",
+        "content": "Started working on a new updates section to share weekly progress. Implemented dynamic loading and timeline layout.",
+        "tags": ["Feature", "Portfolio"],
+        "id": 1
+    },
+    {
+        "date": "2026-03-04",
+        "title": "Performance Optimization",
+        "content": "Optimized the 3D room visualiser using instanced rendering and simplified geometry for mobile devices.",
+        "tags": ["Optimization", "Three.js"],
+        "id": 2
+    },
+    {
+        "date": "2026-02-25",
+        "title": "Kinetic Type Experiment",
+        "content": "Explored rigid body physics with Cannon.js to create an interactive typographic playground.",
+        "tags": ["Experiment", "Physics"],
+        "id": 3
+    }
+]

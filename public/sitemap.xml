@@ -1,14 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://lucas.bovet.dev/</loc>
-    <lastmod>2026-02-19</lastmod>
+    <loc>https://lucas-dev.ch/</loc>
+    <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://lucas.bovet.dev/kinetic.html</loc>
-    <lastmod>2026-02-19</lastmod>
+    <loc>https://lucas-dev.ch/simulation.html</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://lucas-dev.ch/kinetic.html</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://lucas-dev.ch/visualiser.html</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://lucas-dev.ch/physics.html</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://lucas-dev.ch/freitag_build/index.html</loc>
+    <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

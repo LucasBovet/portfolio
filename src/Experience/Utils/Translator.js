@@ -7,6 +7,7 @@ export default class Translator {
                 nav: {
                     about: 'About',
                     work: 'Work',
+                    updates: 'Updates',
                     illustrations: 'Illustrations',
                     contact: 'Contact'
                 },
@@ -37,7 +38,20 @@ export default class Translator {
                         title: 'Kinetic Type Physics',
                         desc: 'Interactive typographic playground using Cannon.js for rigid body physics simulation.',
                         cta: 'View Experiment'
+                    },
+                    visualiser: {
+                        title: '3D Room Visualiser',
+                        desc: 'Architecture drafting tool and interior design simulator with real-time 3D rendering.',
+                        cta: 'Open Visualiser'
+                    },
+                    physics: {
+                        title: 'Cannon.js Physics',
+                        desc: 'Experimental playground for rigid body dynamics using Cannon-es. High-performance instanced rendering with interactive gravity control.',
+                        cta: 'Launch Experiment'
                     }
+                },
+                updates: {
+                    title: 'Updates'
                 },
                 illustrations: {
                     title: 'Illustrations',
@@ -59,6 +73,7 @@ export default class Translator {
                 nav: {
                     about: 'Über mich',
                     work: 'Arbeiten',
+                    updates: 'Log',
                     illustrations: 'Illustrationen',
                     contact: 'Kontakt'
                 },
@@ -89,7 +104,20 @@ export default class Translator {
                         title: 'Kinetische Typografie',
                         desc: 'Interaktiver typografischer Spielplatz mit Cannon.js für Starrkörperphysik-Simulation.',
                         cta: 'Experiment ansehen'
+                    },
+                    visualiser: {
+                        title: '3D-Raumplaner',
+                        desc: 'Architektur-Drafting-Tool und Innendesign-Simulator mit Echtzeit-3D-Rendering.',
+                        cta: 'Planer öffnen'
+                    },
+                    physics: {
+                        title: 'Cannon.js Physik',
+                        desc: 'Experimentelles Spielfeld für Starrkörperdynamik mit Cannon-es. Hochleistungs-instanziertes Rendering mit interaktiver Gravitationssteuerung.',
+                        cta: 'Experiment starten'
                     }
+                },
+                updates: {
+                    title: 'Updates'
                 },
                 illustrations: {
                     title: 'Illustrationen',
@@ -111,6 +139,7 @@ export default class Translator {
                 nav: {
                     about: 'À propos',
                     work: 'Projets',
+                    updates: 'Journal',
                     illustrations: 'Illustrations',
                     contact: 'Contact'
                 },
@@ -141,7 +170,20 @@ export default class Translator {
                         title: 'Physique Typographique Cinétique',
                         desc: 'Terrain de jeu typographique interactif utilisant Cannon.js pour la simulation physique de corps rigides.',
                         cta: 'Voir l\'expérience'
+                    },
+                    visualiser: {
+                        title: 'Visualiseur de Pièce 3D',
+                        desc: 'Outil de dessin architectural et simulateur de design d\'intérieur avec rendu 3D en temps réel.',
+                        cta: 'Ouvrir le Visu'
+                    },
+                    physics: {
+                        title: 'Physique Cannon.js',
+                        desc: 'Terrain d\'expérimentation pour la dynamique des corps rigides avec Cannon-es. Rendu instancié haute performance avec contrôle interactif de la gravité.',
+                        cta: 'Lancer l\'Expérience'
                     }
+                },
+                updates: {
+                    title: 'Mises à jour'
                 },
                 illustrations: {
                     title: 'Illustrations',
@@ -246,6 +288,9 @@ export default class Translator {
         document.documentElement.lang = this.language
 
         this.update()
+
+        // Notify other components
+        window.dispatchEvent(new CustomEvent('langChanged', { detail: { lang: this.language } }))
     }
 
     update() {
