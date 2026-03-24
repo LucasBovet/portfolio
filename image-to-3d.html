@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image to 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #050505;
+      --text:    #e1e1e1;
+      --accent:  #64ffda;
+      --muted:   #888888;
+      --glass:   rgba(255,255,255,0.03);
+      --glass-hover: rgba(255,255,255,0.05);
+      --border:  rgba(255,255,255,0.05);
+      --border-hover: rgba(100,255,218,0.3);
+      --font:    'Outfit', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Top bar ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 2rem;
+      height: 60px;
+      background: rgba(5,5,5,0.6);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    header .subtitle { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── Model status badge ── */
+    #modelBadge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #modelBadge.loading { background: var(--glass); color: var(--muted); }
+    #modelBadge.ready   { background: rgba(100,255,218,0.05); color: var(--accent); border-color: rgba(100,255,218,0.2); }
+    #modelBadge.error   { background: rgba(255,100,100,0.05); color: #ff9090; border-color: rgba(255,100,100,0.2); }
+
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    #modelBadge.loading .badge-dot { background: var(--muted); animation: pulse 1.2s ease-in-out infinite; }
+    #modelBadge.ready   .badge-dot { background: var(--accent); }
+    #modelBadge.error   .badge-dot { background: #ff9090; }
+
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    /* ── Main layout ── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      background: rgba(5,5,5,0.7);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+    .panel { padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border); }
+
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    /* ── Drop zone ── */
+    .dropzone {
+      border: 1px dashed rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: var(--glass);
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--accent);
+      background: rgba(100,255,218,0.03);
+    }
+    .dropzone svg { margin-bottom: 10px; opacity: 0.4; }
+    .dropzone p { font-size: 0.85rem; color: var(--muted); margin-bottom: 3px; }
+    .dropzone small { font-size: 0.75rem; color: rgba(255,255,255,0.2); }
+    #fileInput { display: none; }
+
+    /* ── Thumbnail ── */
+    #thumbWrap { display: none; margin-top: 10px; border-radius: 8px; overflow: hidden; position: relative; }
+    #thumbWrap img { width: 100%; display: block; border-radius: 8px; }
+    #thumbWrap .change-btn {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(5,5,5,0.85); color: var(--text); border: 1px solid var(--border);
+      border-radius: 4px; padding: 3px 10px; font-size: 0.72rem;
+      cursor: pointer; font-family: var(--font); text-transform: uppercase;
+      letter-spacing: 0.05em; transition: border-color 0.3s;
+    }
+    #thumbWrap .change-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Sliders ── */
+    label.ctrl {
+      display: flex; flex-direction: column; gap: 7px;
+      font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem;
+    }
+    label.ctrl .row { display: flex; justify-content: space-between; align-items: center; }
+    label.ctrl .val { color: var(--accent); font-weight: 500; min-width: 36px; text-align: right; }
+
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 2px;
+      border-radius: 2px; background: rgba(255,255,255,0.08); outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 12px; height: 12px;
+      border-radius: 50%; background: var(--accent); cursor: pointer;
+      box-shadow: 0 0 8px rgba(100,255,218,0.4);
+    }
+
+    /* ── Toggles ── */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.8rem; color: var(--muted); margin-bottom: 0.9rem;
+    }
+    .toggle { position: relative; width: 34px; height: 18px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; background: rgba(255,255,255,0.08);
+      border-radius: 10px; cursor: pointer; transition: background 0.2s;
+      border: 1px solid var(--border);
+    }
+    .toggle input:checked + .toggle-track { background: rgba(100,255,218,0.2); border-color: rgba(100,255,218,0.4); }
+    .toggle-track::after {
+      content: ''; position: absolute; left: 2px; top: 2px;
+      width: 12px; height: 12px; background: var(--muted);
+      border-radius: 50%; transition: left 0.2s, background 0.2s;
+    }
+    .toggle input:checked + .toggle-track::after { left: 18px; background: var(--accent); }
+
+    /* ── Color swatches ── */
+    .color-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .swatch {
+      width: 22px; height: 22px; border-radius: 50%;
+      cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s, transform 0.2s;
+    }
+    .swatch:hover { transform: scale(1.15); }
+    .swatch.active { border-color: #fff; }
+
+    /* ── Download button ── */
+    #downloadBtn {
+      display: block; width: 100%; padding: 0.65rem 1rem;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 4px;
+      font-size: 0.78rem; font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      position: relative; overflow: hidden;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    #downloadBtn::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--text);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    #downloadBtn span { position: relative; z-index: 1; }
+    #downloadBtn:not(:disabled):hover { color: var(--bg); border-color: var(--text); }
+    #downloadBtn:not(:disabled):hover::before { transform: scaleX(1); }
+    #downloadBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* ── Viewport ── */
+    #viewport { flex: 1; position: relative; background: var(--bg); }
+    #viewport canvas { display: block; width: 100% !important; height: 100% !important; }
+
+    /* ── Empty state ── */
+    #emptyState {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px; pointer-events: none;
+    }
+    #emptyState svg { opacity: 0.07; }
+    #emptyState p { font-size: 0.85rem; color: rgba(255,255,255,0.2); letter-spacing: 0.05em; }
+
+    /* ── Hints ── */
+    #hints {
+      position: absolute; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 20px; font-size: 0.72rem; color: rgba(255,255,255,0.2);
+      pointer-events: none; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    #hints span::before {
+      content: attr(data-key);
+      background: var(--glass); border: 1px solid var(--border); border-radius: 4px;
+      padding: 1px 7px; margin-right: 5px; color: rgba(255,255,255,0.3); font-size: 0.65rem;
+    }
+
+    /* ── Loading overlay ── */
+    #loading {
+      display: none; position: absolute; inset: 0;
+      background: rgba(5,5,5,0.85);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 10;
+    }
+    #loading.show { display: flex; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 2px solid rgba(255,255,255,0.05);
+      border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loadingText {
+      font-size: 0.8rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    .progress-track {
+      width: 160px; height: 2px; background: rgba(255,255,255,0.05);
+      border-radius: 2px; overflow: hidden;
+    }
+    #progressBar {
+      height: 100%; width: 0%; background: var(--accent);
+      border-radius: 2px; transition: width 0.25s;
+      box-shadow: 0 0 10px rgba(100,255,218,0.5);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c6af7" stroke-width="2">
+    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+    <path d="M2 17l10 5 10-5"/>
+    <path d="M2 12l10 5 10-5"/>
+  </svg>
+  <h1>Image → 3D</h1>
+  <span class="subtitle">/ depth reconstruction</span>
+  <div id="modelBadge" class="loading">
+    <span class="badge-dot"></span>
+    <span id="badgeText">Loading…</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+
+    <div class="panel">
+      <div class="panel-title">Image</div>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*" />
+        <svg width="32" height="32" fill="none" stroke="#888" stroke-width="1.5" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <p>Drop image here</p>
+        <small>or click to browse</small>
+      </div>
+      <div id="thumbWrap">
+        <img id="thumb" src="" alt="preview"/>
+        <button class="change-btn" id="changeBtn">Change</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Shape</div>
+
+      <label class="ctrl">
+        <div class="row"><span>Height scale</span><span class="val" id="heightVal">30</span></div>
+        <input type="range" id="heightScale" min="1" max="100" value="30" />
+      </label>
+
+      <label class="ctrl">
+        <div class="row"><span>Resolution</span><span class="val" id="resVal">128</span></div>
+        <input type="range" id="resolution" min="32" max="256" step="32" value="128" />
+      </label>
+
+      <label class="ctrl">
+        <div class="row"><span>Smoothing</span><span class="val" id="smoothVal">1</span></div>
+        <input type="range" id="smoothing" min="0" max="5" step="1" value="1" />
+      </label>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Display</div>
+
+      <div class="toggle-row">
+        <span>Wireframe</span>
+        <label class="toggle"><input type="checkbox" id="wireframe" /><span class="toggle-track"></span></label>
+      </div>
+
+      <div class="toggle-row">
+        <span>Texture overlay</span>
+        <label class="toggle"><input type="checkbox" id="useTexture" checked /><span class="toggle-track"></span></label>
+      </div>
+
+      <div class="toggle-row">
+        <span>Auto-rotate</span>
+        <label class="toggle"><input type="checkbox" id="autoRotate" /><span class="toggle-track"></span></label>
+      </div>
+
+      <div style="margin-top:4px;">
+        <div class="panel-title" style="margin-bottom:8px;">Mesh colour</div>
+        <div class="color-row" id="colorPicker">
+          <div class="swatch active" data-color="#64ffda" style="background:#64ffda"></div>
+          <div class="swatch" data-color="#a8ff78" style="background:#a8ff78"></div>
+          <div class="swatch" data-color="#f77c6a" style="background:#f77c6a"></div>
+          <div class="swatch" data-color="#f7d96a" style="background:#f7d96a"></div>
+          <div class="swatch" data-color="#ffffff" style="background:#ffffff"></div>
+          <div class="swatch" data-color="#888888" style="background:#888888"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Export</div>
+      <button id="downloadBtn" disabled><span>Download STL</span></button>
+    </div>
+
+  </aside>
+
+  <!-- ── 3D Viewport ── -->
+  <div id="viewport">
+    <div id="emptyState">
+      <svg width="80" height="80" fill="none" stroke="#fff" stroke-width="1" viewBox="0 0 24 24">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      <p>Upload an image to generate a 3D model</p>
+    </div>
+    <div id="hints">
+      <span data-key="Left drag">Rotate</span>
+      <span data-key="Right drag">Pan</span>
+      <span data-key="Scroll">Zoom</span>
+    </div>
+    <div id="loading">
+      <div class="spinner"></div>
+      <p id="loadingText">Loading…</p>
+      <div class="progress-track"><div id="progressBar"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<canvas id="offscreen" style="display:none"></canvas>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+
+// ── Scene ──────────────────────────────────────────────────────
+const viewport = document.getElementById('viewport');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+viewport.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
+scene.fog = new THREE.Fog(0x050505, 80, 160);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+camera.position.set(0, 35, 65);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 5;
+controls.maxDistance = 200;
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sun = new THREE.DirectionalLight(0xfff4e0, 1.4);
+sun.position.set(25, 60, 35);
+sun.castShadow = true;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x8090ff, 0.35);
+fill.position.set(-30, 15, -25);
+scene.add(fill);
+
+const grid = new THREE.GridHelper(200, 40, 0x111111, 0x0d0d0d);
+grid.position.y = -0.5;
+scene.add(grid);
+
+// ── Resize ──────────────────────────────────────────────────────
+function resize() {
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resize();
+new ResizeObserver(resize).observe(viewport);
+
+// ── Animate ─────────────────────────────────────────────────────
+function animate() {
+  requestAnimationFrame(animate);
+  controls.autoRotate = document.getElementById('autoRotate').checked;
+  controls.autoRotateSpeed = 1.2;
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// ── State ────────────────────────────────────────────────────────
+let depthPipe        = null;
+let modelState       = 'loading';       // loading | ready | error
+let currentImageEl   = null;            // HTMLImageElement
+let currentImageUrl  = null;            // object URL
+let currentDepthData = null;            // Float32Array normalised 0–1
+let currentDepthDims = null;            // [srcH, srcW]
+let currentGroup     = null;            // THREE.Group in scene
+let meshColor        = 0x64ffda;
+const exporter       = new STLExporter();
+
+// ── UI helpers ───────────────────────────────────────────────────
+function setModelBadge(state, text) {
+  const badge = document.getElementById('modelBadge');
+  badge.className = state;
+  document.getElementById('badgeText').textContent = text;
+}
+
+function setLoading(show, text = '') {
+  document.getElementById('loading').classList.toggle('show', show);
+  if (text) document.getElementById('loadingText').textContent = text;
+}
+
+function setProgress(pct) {
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+// ── Load AI model (starts immediately on page load) ──────────────
+initModel();
+
+async function initModel() {
+  try {
+    const { pipeline, env } = await import(
+      'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2'
+    );
+    env.allowLocalModels = false;
+
+    depthPipe = await pipeline(
+      'depth-estimation',
+      'Xenova/depth-anything-small-hf',
+      {
+        progress_callback(p) {
+          if (p.status === 'progress' && p.progress != null) {
+            const pct = Math.round(p.progress);
+            setModelBadge('loading', `Downloading… ${pct}%`);
+            setProgress(pct);
+          }
+        }
+      }
+    );
+
+    modelState = 'ready';
+    setModelBadge('ready', 'Ready');
+    setProgress(0);
+
+    // If user already uploaded while model was loading, process now
+    if (currentImageUrl) runDepthAndBuild();
+
+  } catch (err) {
+    console.warn('Depth AI failed, using brightness fallback:', err);
+    modelState = 'error';
+    setModelBadge('error', 'Fallback mode (brightness)');
+    if (currentImageEl) buildAndShow();
+  }
+}
+
+// ── Run AI depth estimation ──────────────────────────────────────
+async function runDepthAndBuild() {
+  setLoading(true, 'Estimating depth…');
+  try {
+    const result    = await depthPipe(currentImageUrl);
+    const { data, dims } = result.predicted_depth;
+
+    // Normalise depth values to 0–1
+    let minD = Infinity, maxD = -Infinity;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] < minD) minD = data[i];
+      if (data[i] > maxD) maxD = data[i];
+    }
+    const range = maxD - minD || 1;
+    currentDepthData = new Float32Array(data.length);
+    for (let i = 0; i < data.length; i++) {
+      currentDepthData[i] = (data[i] - minD) / range;
+    }
+    // dims may be [H, W] or [1, H, W]
+    currentDepthDims = dims.length === 3
+      ? [dims[1], dims[2]]
+      : [dims[0], dims[1]];
+
+    buildAndShow();
+  } catch (err) {
+    console.error('Depth estimation error:', err);
+    setLoading(false);
+    buildAndShow(); // fallback
+  }
+}
+
+// ── Sample cached depth at target resolution ─────────────────────
+function sampleDepth(W) {
+  if (!currentDepthData || !currentDepthDims) return null;
+  const [srcH, srcW] = currentDepthDims;
+  const H = W;
+  const out = new Float32Array(W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const sx = Math.round(x / (W - 1) * (srcW - 1));
+      const sy = Math.round(y / (H - 1) * (srcH - 1));
+      out[y * W + x] = currentDepthData[sy * srcW + sx];
+    }
+  }
+  return out;
+}
+
+// ── Brightness fallback ───────────────────────────────────────────
+function getBrightnessHeights(W) {
+  const offscreen = document.getElementById('offscreen');
+  const ctx = offscreen.getContext('2d');
+  offscreen.width = W; offscreen.height = W;
+  ctx.drawImage(currentImageEl, 0, 0, W, W);
+  const px = ctx.getImageData(0, 0, W, W).data;
+  const out = new Float32Array(W * W);
+  for (let i = 0; i < W * W; i++) {
+    out[i] = (px[i*4]*0.299 + px[i*4+1]*0.587 + px[i*4+2]*0.114) / 255;
+  }
+  return out;
+}
+
+// ── Smooth (box blur) ─────────────────────────────────────────────
+function blur(h, W, H, passes) {
+  for (let p = 0; p < passes; p++) {
+    const tmp = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        let sum = 0, n = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x+dx, ny = y+dy;
+          if (nx>=0 && nx<W && ny>=0 && ny<H) { sum += h[ny*W+nx]; n++; }
+        }
+        tmp[y*W+x] = sum / n;
+      }
+    }
+    h.set(tmp);
+  }
+}
+
+// ── Build + show 3D object ────────────────────────────────────────
+function buildAndShow() {
+  if (!currentImageEl) return;
+
+  const W          = parseInt(document.getElementById('resolution').value);
+  const heightScale = parseFloat(document.getElementById('heightScale').value);
+  const smoothPasses = parseInt(document.getElementById('smoothing').value);
+  const wireframe  = document.getElementById('wireframe').checked;
+  const useTexture = document.getElementById('useTexture').checked;
+
+  // Get height values from AI depth or brightness fallback
+  let heights = currentDepthData ? sampleDepth(W) : getBrightnessHeights(W);
+  if (!heights) { setLoading(false); return; }
+  if (smoothPasses > 0) blur(heights, W, W, smoothPasses);
+
+  // Remove old group
+  if (currentGroup) {
+    scene.remove(currentGroup);
+    currentGroup.traverse(obj => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) obj.material.dispose();
+    });
+  }
+
+  // ── Front surface geometry ──
+  const scaleXZ = 40 / W;
+  const positions = new Float32Array(W * W * 3);
+  const uvs       = new Float32Array(W * W * 2);
+  let minY = Infinity;
+
+  for (let y = 0; y < W; y++) {
+    for (let x = 0; x < W; x++) {
+      const i  = y * W + x;
+      const py = heights[i] * heightScale;
+      positions[i*3]   = (x - W/2) * scaleXZ;
+      positions[i*3+1] = py;
+      positions[i*3+2] = (y - W/2) * scaleXZ;
+      uvs[i*2]   = x / (W-1);
+      uvs[i*2+1] = 1 - y / (W-1);
+      if (py < minY) minY = py;
+    }
+  }
+
+  const indices = [];
+  for (let y = 0; y < W-1; y++) {
+    for (let x = 0; x < W-1; x++) {
+      const a = y*W+x, b = y*W+x+1, c = (y+1)*W+x, d = (y+1)*W+x+1;
+      indices.push(a,c,b, b,c,d);
+    }
+  }
+
+  const frontGeo = new THREE.BufferGeometry();
+  frontGeo.setIndex(indices);
+  frontGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  frontGeo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  frontGeo.computeVertexNormals();
+
+  // ── Front material ──
+  let frontMat;
+  if (useTexture) {
+    const offscreen = document.getElementById('offscreen');
+    const ctx = offscreen.getContext('2d');
+    offscreen.width = W; offscreen.height = W;
+    ctx.drawImage(currentImageEl, 0, 0, W, W);
+    frontMat = new THREE.MeshStandardMaterial({
+      map: new THREE.CanvasTexture(offscreen),
+      wireframe, roughness: 0.7, metalness: 0.05,
+    });
+  } else {
+    frontMat = new THREE.MeshStandardMaterial({
+      color: meshColor, wireframe, roughness: 0.65, metalness: 0.2,
+    });
+  }
+
+  const frontMesh = new THREE.Mesh(frontGeo, frontMat);
+  frontMesh.castShadow = true;
+
+  // ── Solid base (gives it depth so it looks like a real object) ──
+  const baseThick = Math.max(3, heightScale * 0.15); // proportional thickness
+  const bW = (W-1) * scaleXZ;
+  const baseGeo = new THREE.BoxGeometry(bW, baseThick, bW);
+  const baseMat = new THREE.MeshStandardMaterial({
+    color: useTexture ? 0x080808 : new THREE.Color(meshColor).multiplyScalar(0.3),
+    roughness: 0.9, metalness: 0.05, wireframe,
+  });
+  const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+  baseMesh.position.y = minY - baseThick / 2;
+  baseMesh.castShadow = true;
+  baseMesh.receiveShadow = true;
+
+  currentGroup = new THREE.Group();
+  currentGroup.add(frontMesh, baseMesh);
+  scene.add(currentGroup);
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('downloadBtn').disabled = false;
+  setLoading(false);
+}
+
+// ── Regenerate (after control changes) ───────────────────────────
+function regenerate() {
+  if (!currentImageEl) return;
+  setLoading(true, 'Rebuilding mesh…');
+  setTimeout(buildAndShow, 30);
+}
+
+// ── Upload ────────────────────────────────────────────────────────
+function loadImage(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    currentImageEl   = img;
+    currentImageUrl  = url;
+    currentDepthData = null; // reset cached depth
+    currentDepthDims = null;
+
+    document.getElementById('thumb').src = url;
+    document.getElementById('thumbWrap').style.display = 'block';
+    document.getElementById('dropzone').style.display  = 'none';
+
+    // Reset camera
+    camera.position.set(0, 35, 65);
+    controls.target.set(0, 8, 0);
+    controls.update();
+
+    if (modelState === 'ready') {
+      runDepthAndBuild();
+    } else if (modelState === 'error') {
+      buildAndShow();
+    } else {
+      // Model still loading — show placeholder and wait
+      setLoading(true, 'Preparing…');
+    }
+  };
+  img.src = url;
+}
+
+const dropzone  = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+
+dropzone.addEventListener('click',     () => fileInput.click());
+document.getElementById('changeBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change',   e  => loadImage(e.target.files[0]));
+dropzone.addEventListener('dragover',  e  => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', ()  => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop',      e  => { e.preventDefault(); dropzone.classList.remove('dragover'); loadImage(e.dataTransfer.files[0]); });
+
+// ── Slider controls ───────────────────────────────────────────────
+const elHeight   = document.getElementById('heightScale');
+const elRes      = document.getElementById('resolution');
+const elSmooth   = document.getElementById('smoothing');
+const elWire     = document.getElementById('wireframe');
+const elTexture  = document.getElementById('useTexture');
+
+// Live height-scale update (fast path — no full rebuild)
+elHeight.addEventListener('input', () => {
+  document.getElementById('heightVal').textContent = elHeight.value;
+  if (!currentGroup) return;
+
+  const W     = parseInt(elRes.value);
+  const scale = parseFloat(elHeight.value);
+  let heights = currentDepthData ? sampleDepth(W) : getBrightnessHeights(W);
+  if (!heights) return;
+  const sp = parseInt(elSmooth.value);
+  if (sp > 0) blur(heights, W, W, sp);
+
+  const frontMesh = currentGroup.children[0];
+  const baseMesh  = currentGroup.children[1];
+  const pos = frontMesh.geometry.attributes.position;
+  let minY = Infinity;
+
+  for (let i = 0; i < W * W; i++) {
+    const py = heights[i] * scale;
+    pos.array[i*3+1] = py;
+    if (py < minY) minY = py;
+  }
+  pos.needsUpdate = true;
+  frontMesh.geometry.computeVertexNormals();
+
+  const baseThick = Math.max(3, scale * 0.15);
+  baseMesh.geometry.dispose();
+  const bW = (W-1) * (40/W);
+  baseMesh.geometry = new THREE.BoxGeometry(bW, baseThick, bW);
+  baseMesh.position.y = minY - baseThick / 2;
+});
+
+elRes.addEventListener('input',    () => { document.getElementById('resVal').textContent = elRes.value; });
+elRes.addEventListener('change',   regenerate);
+elSmooth.addEventListener('input', () => { document.getElementById('smoothVal').textContent = elSmooth.value; });
+elSmooth.addEventListener('change', regenerate);
+elWire.addEventListener('change',  regenerate);
+elTexture.addEventListener('change', regenerate);
+
+// ── Color swatches ────────────────────────────────────────────────
+document.getElementById('colorPicker').addEventListener('click', e => {
+  const sw = e.target.closest('.swatch');
+  if (!sw) return;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  sw.classList.add('active');
+  meshColor = parseInt(sw.dataset.color.replace('#', '0x'));
+  if (currentGroup && !elTexture.checked) {
+    currentGroup.children[0].material.color.setHex(meshColor);
+    currentGroup.children[1].material.color.set(
+      new THREE.Color(meshColor).multiplyScalar(0.4)
+    );
+  }
+});
+
+// ── STL export ────────────────────────────────────────────────────
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  if (!currentGroup) return;
+  const stl  = exporter.parse(currentGroup, { binary: true });
+  const blob = new Blob([stl], { type: 'application/octet-stream' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'model.stl';
+  a.click();
+});
+</script>
+</body>
+</html>

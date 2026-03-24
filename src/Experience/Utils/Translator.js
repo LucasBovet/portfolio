@@ -48,6 +48,11 @@ export default class Translator {
                         title: 'Cannon.js Physics',
                         desc: 'Experimental playground for rigid body dynamics using Cannon-es. High-performance instanced rendering with interactive gravity control.',
                         cta: 'Launch Experiment'
+                    },
+                    image3d: {
+                        title: 'Image to 3D',
+                        desc: 'Upload any image and get a live 3D depth reconstruction rendered in the browser — no installs required.',
+                        cta: 'Try it'
                     }
                 },
                 updates: {
@@ -114,6 +119,11 @@ export default class Translator {
                         title: 'Cannon.js Physik',
                         desc: 'Experimentelles Spielfeld für Starrkörperdynamik mit Cannon-es. Hochleistungs-instanziertes Rendering mit interaktiver Gravitationssteuerung.',
                         cta: 'Experiment starten'
+                    },
+                    image3d: {
+                        title: 'Bild zu 3D',
+                        desc: 'Lade ein beliebiges Bild hoch und erhalte eine live 3D-Tiefenrekonstruktion direkt im Browser — ohne Installation.',
+                        cta: 'Ausprobieren'
                     }
                 },
                 updates: {
@@ -180,6 +190,11 @@ export default class Translator {
                         title: 'Physique Cannon.js',
                         desc: 'Terrain d\'expérimentation pour la dynamique des corps rigides avec Cannon-es. Rendu instancié haute performance avec contrôle interactif de la gravité.',
                         cta: 'Lancer l\'Expérience'
+                    },
+                    image3d: {
+                        title: 'Image en 3D',
+                        desc: 'Importez n\'importe quelle image et obtenez une reconstruction 3D en profondeur dans le navigateur — sans installation.',
+                        cta: 'Essayer'
                     }
                 },
                 updates: {

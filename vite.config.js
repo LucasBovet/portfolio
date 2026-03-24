@@ -25,7 +25,8 @@ export default defineConfig({
                 simulation: resolve(__dirname, 'simulation.html'),
                 visualiser: resolve(__dirname, 'visualiser.html'),
                 physics: resolve(__dirname, 'physics.html'),
-                admin: resolve(__dirname, 'admin.html')
+                admin: resolve(__dirname, 'admin.html'),
+                image3d: resolve(__dirname, 'image-to-3d.html')
             }
         },
         chunkSizeWarningLimit: 1000
